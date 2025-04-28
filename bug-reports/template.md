@@ -1,0 +1,3 @@
+# Bug Report
+
+## Report Template
