@@ -7,9 +7,12 @@ Cypress.Commands.add('dismissCookieBanner', (selector) => {
 });
 
 Cypress.Commands.add('searchFor', (query) => {
-    cy.get('#suggestion-search', { timeout: 10000 })
+    cy.get('#suggestion-search', {timeout: 10000})
         .should('be.visible')
         .type(`${query}{enter}`);
+    cy.get('.ipc-metadata-list-summary-item__t')
+        .first()
+        .click();
 });
 
 Cypress.Commands.add('clickHref', (label) => {
@@ -62,7 +65,7 @@ Cypress.Commands.add('searchBornToday', (period) => {
 Cypress.Commands.add('calculateDateYearsAgo', (years) => {
     const today = new Date();
     const targetYear = today.getFullYear() - years;
-    const targetMonth = today.toLocaleString('default', { month: 'long' });
+    const targetMonth = today.toLocaleString('default', {month: 'long'});
     const targetDay = today.getDate();
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
@@ -79,15 +82,15 @@ Cypress.Commands.add('searchBornOnDate', (month, day, year) => {
     cy.openNavigationMenu();
     cy.clickMenuItem('Born Today');
 
-    cy.get('input[type="search"]', { timeout: 8000 }).as('searchField');
+    cy.get('input[type="search"]', {timeout: 8000}).as('searchField');
     cy.get('@searchField').clear().should('have.value', '');
 
-    cy.contains('button', 'Birth date', { timeout: 5000 }).click();
-    cy.contains('.ipc-list-item__text', month, { timeout: 3000 })
+    cy.contains('button', 'Birth date', {timeout: 5000}).click();
+    cy.contains('.ipc-list-item__text', month, {timeout: 3000})
         .should('be.visible')
         .click();
 
-    cy.contains('.ipc-list-item__text', `^${day}$`, { matchCase: false })
+    cy.contains('.ipc-list-item__text', `^${day}$`, {matchCase: false})
         .scrollIntoView()
         .click();
 
@@ -96,7 +99,7 @@ Cypress.Commands.add('searchBornOnDate', (month, day, year) => {
         .type(year.toString())
         .should('have.value', year.toString());
 
-    cy.contains('button', 'Apply', { timeout: 3000 }).click();
+    cy.contains('button', 'Apply', {timeout: 3000}).click();
 });
 
 Cypress.Commands.add('interactWithFirstCelebrityProfile', () => {

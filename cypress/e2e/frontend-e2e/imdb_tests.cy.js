@@ -12,10 +12,8 @@ describe('IMDb Test Suite', () => {
 
     it('search for Nicolas Cage movies with Completed tag', () => {
         cy.searchFor('Nicolas Cage');
-        cy.get('.ipc-metadata-list-summary-item__t')
-            .first().click();
         cy.clickHref('Credits');
-        cy.clickHref('Upcoming');
+        cy.clickLabel('Upcoming');
 
         cy.get('body').then(($body) => {
             if ($body.find('.ipc-label--completed').length > 0) {
