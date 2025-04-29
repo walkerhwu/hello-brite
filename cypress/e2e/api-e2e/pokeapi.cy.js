@@ -7,6 +7,7 @@ describe('PokeAPI Tests', () => {
             cy.request({
                 method: 'GET',
                 url: `${baseUrl}/berry/${validId}/`,
+                failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).to.equal(200);
                 expect(response.body).to.have.property('id', validId);
@@ -22,7 +23,7 @@ describe('PokeAPI Tests', () => {
             cy.request({
                 method: 'GET',
                 url: `${baseUrl}/berry/${invalidId}/`,
-               // failOnStatusCode: false,
+                failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).to.equal(404);
                 expect(response.body).to.equal('Not Found');
@@ -51,6 +52,7 @@ describe('PokeAPI Tests', () => {
             cy.request({
                 method: 'GET',
                 url: `${baseUrl}/berry/${invalidName}/`,
+                failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).to.equal(404);
                 expect(response.body).to.equal('Not Found');
