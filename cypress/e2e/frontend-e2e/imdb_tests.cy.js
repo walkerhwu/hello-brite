@@ -31,7 +31,7 @@ describe('IMDb Test Suite', () => {
 
     it('Top Box Office rating', () => {
         cy.openNavigationMenu();
-        cy.clickMenuItem('Top Box Office');
+        cy.clickHref('Top Box Office');
 
         cy.url().should('include', '/chart/boxoffice/');
         cy.get('.ipc-metadata-list--base').should('be.visible');
@@ -49,18 +49,17 @@ describe('IMDb Test Suite', () => {
 
     it('Navigates to Breaking Bad photos and selects Danny Trejo\'s 2nd photo', () => {
         cy.openNavigationMenu();
-        cy.clickMenuItem('Top 250 TV Shows');
+        cy.clickHref('Top 250 TV Shows');
 
         cy.contains('Breaking Bad').click();
-        cy.get('[data-testid="hero-media__photos"]').click();
-
+        cy.get('[data-testid="hero__photo-link"]').click({force: true});
         cy.searchWithinPage('Danny Trejo');
-        cy.contains('Danny Trejo').click();
+        cy.contains('Danny Trejo').click({force: true});
 
         cy.get('.media_index_thumb_list img')
             .eq(1)
             .should('be.visible')
-            .click();
+            .click({force: true});
 
         cy.get('.sc-7ab21ed2-1').should('be.visible');
     });
