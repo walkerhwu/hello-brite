@@ -16,7 +16,7 @@ Cypress.Commands.add('searchFor', (query) => {
 });
 
 Cypress.Commands.add('clickHref', (label) => {
-    cy.contains('a', label).click();
+    cy.contains('a', label).click({force: true});
 });
 
 Cypress.Commands.add('clickLabel', (label) => {
@@ -27,6 +27,10 @@ Cypress.Commands.add('openNavigationMenu', () => {
     cy.get('button[aria-label*="Menu"], button[aria-label*="navigation"], .ipc-responsive-button')
         .first()
         .click();
+});
+
+Cypress.Commands.add('clickMenuItem', (label) => {
+    cy.contains('.ipc-list-item__text', label).click({force: true});
 });
 
 Cypress.Commands.add('getMovieFromList', (index) => {
@@ -45,57 +49,51 @@ Cypress.Commands.add('rateMovie', (rating) => {
 });
 
 Cypress.Commands.add('searchWithinPage', (query) => {
-    cy.get('.filter-search').type(query);
+    cy.get('[data-testid="mv-gallery-button"]').click();
+    cy.get('[data-testid="image-chip-dropdown-test-id"]').click();
+    cy.get('[data-testid="promptable"]').should('be.visible');
+
+    cy.get('#Person-filter-select-dropdown')
+        .find(`option:contains('${query}')`)
+        .then($el =>
+            $el.get(0).setAttribute("selected", "selected")
+        ).parent().trigger("change")
+
+    cy.contains('button', query).should('be.visible');
+
+    cy.get(`[aria-label="Close Prompt"]`).click();
+
 });
 
-Cypress.Commands.add('searchBornToday', (period) => {
+Cypress.Commands.add('searchBornOnDay', (targetDay) => {
     cy.openNavigationMenu();
-    cy.clickHref('Born Today');
+    cy.clickMenuItem('Born Today');
+    cy.url().should('include', 'birth_monthday');
 
-    cy.url().should('include', '/feature/bornondate');
-    cy.get('input[placeholder*="Search name"]').clear();
-    cy.contains('Birthday').click({force: true});
-    cy.contains(period).click({force: true});
+    cy.contains('button', 'Birthday').click();
+
+    cy.contains('label', 'Birthday').click();
+    cy.get('input[data-testid="birthday-input-test-id"]')
+        .type(targetDay)
+        .type('{enter}');
+
+    cy.get('button[data-testid="adv-search-get-results"]').click();
+
+
 });
 
-Cypress.Commands.add('calculateDateYearsAgo', (years) => {
-    const today = new Date();
-    const targetYear = today.getFullYear() - years;
-    const targetMonth = today.toLocaleString('default', {month: 'long'});
-    const targetDay = today.getDate();
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-
-    return {
-        year: targetYear,
-        month: targetMonth,
-        day: targetDay,
-        formatted: `${targetMonth} ${targetDay}, ${targetYear}`,
-        timestamp: timestamp
-    };
-});
-
-Cypress.Commands.add('searchBornOnDate', (month, day, year) => {
+Cypress.Commands.add('searchBornOnDate', (targetDate) => {
     cy.openNavigationMenu();
-    cy.clickHref('Born Today');
+    cy.clickMenuItem('Born Today');
+    cy.url().should('include', 'birth_monthday');
 
-    cy.get('input[type="search"]', {timeout: 8000}).as('searchField');
-    cy.get('@searchField').clear().should('have.value', '');
+    cy.contains('button', 'Birthday').click();
 
-    cy.contains('button', 'Birth date', {timeout: 5000}).click({force: true});
-    cy.contains('.ipc-list-item__text', month, {timeout: 3000})
-        .should('be.visible')
-        .click({force: true});
+    cy.contains('label', 'Birth date').click();
+    cy.get('input[name=birth-date-start-input]').type(targetDate)
+    cy.get('input[name=birth-date-end-input]').type(targetDate)
 
-    cy.contains('.ipc-list-item__text', `^${day}$`, {matchCase: false})
-        .scrollIntoView()
-        .click({force: true});
-
-    cy.get('input[placeholder="Year"]')
-        .clear()
-        .type(year.toString())
-        .should('have.value', year.toString());
-
-    cy.contains('button', 'Apply', {timeout: 3000}).click({force: true});
+    cy.get('button[data-testid="adv-search-get-results"]').click();
 });
 
 Cypress.Commands.add('interactWithFirstCelebrityProfile', () => {
@@ -107,10 +105,10 @@ Cypress.Commands.add('interactWithFirstCelebrityProfile', () => {
                 if ($link.length) {
                     const linkText = $link.text().trim();
                     cy.log(`Found description link: "${linkText}"`);
-                    cy.wrap($link).click({force: true});
+                    cy.wrap($link).click();
                 } else {
                     cy.log('No description links found, clicking name instead');
-                    cy.get('.ipc-metadata-list-summary-item__t').first().click({force: true});
+                    cy.get('.ipc-metadata-list-summary-item__t').first().click();
                 }
             });
     });

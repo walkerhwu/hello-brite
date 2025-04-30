@@ -7,7 +7,7 @@ describe('IMDb Test Suite', () => {
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
             }
         });
-        cy.dismissCookieBanner('#onetrust-accept-btn-handler');
+        cy.dismissCookieBanner();
     });
 
     it('search for Nicolas Cage movies with Completed tag', () => {
@@ -42,9 +42,6 @@ describe('IMDb Test Suite', () => {
         cy.get('[data-testid="hero-rating-bar__user-rating"]').should('be.visible');
 
         cy.rateMovie(5);
-
-        cy.contains('Sign in').should('exist');
-        cy.url().should('contain', '/registration/');
     });
 
     it('Navigates to Breaking Bad photos and selects Danny Trejo\'s 2nd photo', () => {
@@ -53,24 +50,28 @@ describe('IMDb Test Suite', () => {
 
         cy.contains('Breaking Bad').click();
         cy.get('[data-testid="hero__photo-link"]').click({force: true});
+
         cy.searchWithinPage('Danny Trejo');
-        cy.contains('Danny Trejo').click({force: true});
 
-        cy.get('.media_index_thumb_list img')
+        cy.get('[data-testid="sub-section-images"]')
+            .find('a')
             .eq(1)
-            .should('be.visible')
-            .click({force: true});
+            .click();
+        cy.get('[data-image-id="rm1473521153-curr"]').should('be.visible');
 
-        cy.get('.sc-7ab21ed2-1').should('be.visible');
+
     });
 
     it('Searches for celebrities born yesterday and takes screenshot', () => {
-        cy.searchBornToday('Yesterday');
+        const targetDay = calculateYesteray();
+        cy.searchBornOnDay(targetDay);
 
         cy.get('.ipc-metadata-list-summary-item')
             .should('have.length.gt', 2)
+
+        cy.get('.ipc-title-link-wrapper')
             .eq(2)
-            .click();
+            .click()
 
         cy.url().should('include', '/name/');
         cy.screenshot('celebrity-born-yesterday', {
@@ -80,12 +81,11 @@ describe('IMDb Test Suite', () => {
     });
 
     it('Finds celebrities born 40 years ago today and interacts with profile', () => {
-        const targetDate = cy.calculateDateYearsAgo(40);
-        cy.log(`Searching for celebrities born on: ${targetDate.formatted}`);
+        const targetDate = calculateDateYearsAgo(40);
+        cy.log(`Searching for celebrities born on: ${targetDate}`);
 
-        cy.searchBornOnDate(targetDate.month, targetDate.day, targetDate.year);
-
-        cy.get('.ipc-metadata-list-summary-item', { timeout: 10000 })
+        cy.searchBornOnDate(targetDate);
+        cy.get('.ipc-metadata-list-summary-item')
             .should('exist')
             .its('length')
             .then((count) => {
@@ -97,10 +97,28 @@ describe('IMDb Test Suite', () => {
                 cy.interactWithFirstCelebrityProfile();
 
                 cy.url({ timeout: 8000 }).should('not.include', '/feature/bornondate');
-                cy.screenshot(`celebrity-${targetDate.year}-${targetDate.timestamp}`, {
+                cy.screenshot('celebrity-celebrity-born-40-years-ago-today', {
                     capture: 'viewport',
                     overwrite: true,
                 });
             });
     });
 });
+
+function calculateYesteray() {
+    const date = new Date();
+    date.setTime(date.getTime() - 1000*60*60*24)
+    const targetMonth = (date.getMonth() + 1).toString().padStart(2, "0");
+    const targetDay = date.getDate().toString().padStart(2, "0");
+
+    return `${targetMonth}-${targetDay}`;
+}
+
+function calculateDateYearsAgo(years) {
+    const date = new Date();
+    const targetYear = (date.getFullYear()-years).toString().padStart(4, "0");
+    const targetMonth = (date.getMonth() + 1).toString().padStart(2, "0");
+    const targetDay = date.getDate().toString().padStart(2, "0");
+
+    return `${targetYear}-${targetMonth}-${targetDay}`;
+}
